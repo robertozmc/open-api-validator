@@ -1,18 +1,18 @@
-import {
+const {
   dereference
-} from "@apidevtools/swagger-parser";
-import axios from "axios";
-import {
+} = require('@apidevtools/swagger-parser');
+const axios = require('axios');
+const {
   diff
-} from "json-diff";
-import {
+} = require('json-diff');
+const {
   isArray,
   isObject,
   merge,
   mergeWith
-} from "lodash";
+} = require('lodash')
 
-export class OpenApiValidator {
+class OpenApiValidator {
   constructor(swaggerHubApiUrl, swaggerHubApiKey) {
     this.swaggerHubApiUrl = swaggerHubApiUrl;
     this.swaggerHubApiKey = swaggerHubApiKey;
@@ -175,3 +175,5 @@ export class OpenApiValidator {
     return merged;
   }
 }
+
+module.exports = OpenApiValidator;
