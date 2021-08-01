@@ -1,19 +1,14 @@
-const {
-  dereference
-} = require('@apidevtools/swagger-parser');
-const axios = require('axios');
-const {
-  diff
-} = require('json-diff');
-const {
-  isArray,
-  isObject,
-  merge,
-  mergeWith
-} = require('lodash')
+import { dereference } from "@apidevtools/swagger-parser";
+import axios from "axios";
+import { diff } from "json-diff";
+import { isArray, isObject, merge, mergeWith } from "lodash";
+import { OpenAPI } from "openapi-types";
 
-class OpenApiValidator {
-  constructor(swaggerHubApiUrl, swaggerHubApiKey) {
+export class OpenApiValidator {
+  private swaggerHubApiUrl: string;
+  private swaggerHubApiKey: string;
+
+  constructor(swaggerHubApiUrl: string, swaggerHubApiKey: string) {
     this.swaggerHubApiUrl = swaggerHubApiUrl;
     this.swaggerHubApiKey = swaggerHubApiKey;
   }
@@ -55,10 +50,7 @@ class OpenApiValidator {
     };
   }
 
-  validateOpenApi(
-    sourceOpenApi,
-    destinationOpenApi
-  ) {
+  private validateOpenApi(sourceOpenApi, destinationOpenApi): ValidationResult {
     return {
       valid: sourceOpenApi === destinationOpenApi,
       info: {
@@ -68,7 +60,7 @@ class OpenApiValidator {
     };
   }
 
-  validateSection(sourceSection, destinationSection) {
+  private validateSection(sourceSection, destinationSection) {
     const difference = diff(sourceSection, destinationSection);
 
     return {
@@ -77,7 +69,7 @@ class OpenApiValidator {
     };
   }
 
-  isValid(difference) {
+  private isValid(difference) {
     if (!isArray(difference) && isObject(difference)) {
       let valid = true;
 
@@ -102,7 +94,7 @@ class OpenApiValidator {
   }
 
   // get source open api using axios
-  async getSourceApi() {
+  private async getSourceApi() {
     const openApiResponse = await axios.get(this.swaggerHubApiUrl, {
       headers: {
         Authorization: this.swaggerHubApiKey,
@@ -116,15 +108,15 @@ class OpenApiValidator {
     return transformedSourceApi;
   }
 
-  async prepareDestinationApi(api) {
-    const dereferencedApi = await dereference(api);
+  private async prepareDestinationApi(api) {
+    const dereferencedApi = await dereference(api as OpenAPI.Document);
     let transformedApi = this.mergeAll(dereferencedApi);
     transformedApi = this.sortAll(transformedApi);
 
     return transformedApi;
   }
 
-  sortAll(element) {
+  private sortAll(element) {
     if (isArray(element)) {
       return element.sort();
     } else if (!isArray(element) && isObject(element)) {
@@ -140,7 +132,7 @@ class OpenApiValidator {
     return element;
   }
 
-  mergeAll(object) {
+  private mergeAll(object) {
     if (!isArray(object) && isObject(object)) {
       const newObject = {};
 
@@ -161,7 +153,7 @@ class OpenApiValidator {
     return object;
   }
 
-  mergeAllOf(allOf) {
+  private mergeAllOf(allOf: Array<any>) {
     function customizer(objValue, srcValue) {
       if (isArray(objValue)) {
         return objValue.concat(srcValue);
@@ -176,4 +168,7 @@ class OpenApiValidator {
   }
 }
 
-module.exports = OpenApiValidator;
+interface ValidationResult {
+  valid: boolean;
+  info: any;
+}
