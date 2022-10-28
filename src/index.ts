@@ -95,6 +95,7 @@ export class OpenApiValidator {
 
   // get source open api using axios
   private async getSourceApi() {
+    await process.nextTick(() => {});
     const openApiResponse = await axios.get(this.swaggerHubApiUrl, {
       headers: {
         Authorization: this.swaggerHubApiKey,
